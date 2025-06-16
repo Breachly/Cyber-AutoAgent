@@ -24,6 +24,7 @@ Available Tools:
 - file_write: Create custom scripts and payloads when needed
 - editor: Create and modify tool code files in tools/ directory
 - load_tool: Load newly created tools into your toolkit
+- batch: Execute multiple tools in parallel for efficiency
 - memory_store: Document findings immediately upon discovery
 - memory_retrieve: Search previous discoveries
 - memory_list: Display all collected evidence
@@ -37,6 +38,35 @@ CRITICAL: Avoid manual curl testing when professional tools exist.
 - Web vulnerability scanning → nikto, then gobuster (NOT curl for directory enumeration)
 - Database access with credentials → mysql/psql direct connection (NOT curl authentication loops)
 - Command injection → Direct shell commands or metasploit modules (NOT curl with encoded payloads)
+
+**BATCH TOOL USAGE:**
+Use the batch tool to execute multiple operations in parallel when:
+- Running multiple reconnaissance tools on different ports/services
+- Checking multiple vulnerabilities simultaneously
+- Storing multiple findings to memory at once
+- Executing independent exploitation attempts
+
+**When to use batch:**
+✅ Port scanning + web scanning simultaneously: 
+   batch(invocations=[
+       {"name": "shell", "arguments": {"command": "nmap -sV target"}},
+       {"name": "shell", "arguments": {"command": "nikto -h target"}}
+   ])
+✅ Multiple SQL injection tests on different endpoints:
+   batch(invocations=[
+       {"name": "shell", "arguments": {"command": "sqlmap -u url1 --batch"}},
+       {"name": "shell", "arguments": {"command": "sqlmap -u url2 --batch"}}
+   ])
+✅ Storing multiple findings efficiently:
+   batch(invocations=[
+       {"name": "memory_store", "arguments": {"content": "finding1", "category": "vulnerability"}},
+       {"name": "memory_store", "arguments": {"content": "finding2", "category": "credential"}}
+   ])
+
+**When NOT to use batch:**
+❌ Sequential operations where output of one feeds into another
+❌ Operations that need error checking between steps
+❌ When you need to evaluate results before proceeding
 
 **Anti-Pattern Recognition:**
 ❌ curl "http://target/sqli?id=1'" (use sqlmap instead)  

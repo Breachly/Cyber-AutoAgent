@@ -9,7 +9,7 @@ from typing import Optional, List
 from strands import Agent
 from strands.models import BedrockModel
 from strands.agent.conversation_manager import SlidingWindowConversationManager
-from strands_tools import shell, file_write, editor, load_tool
+from strands_tools import shell, file_write, editor, load_tool, batch
 from mem0 import Memory
 
 from . import memory_tools
@@ -21,7 +21,7 @@ from .utils import Colors
 warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 def create_agent(target: str, objective: str, max_steps: int = 100, available_tools: Optional[List[str]] = None, 
-                op_id: Optional[str] = None, model_id: str = "us.anthropic.claude-3-7-sonnet-20250219-v1:0", 
+                op_id: Optional[str] = None, model_id: str = "us.anthropic.claude-sonnet-4-20250514-v1:0", 
                 region_name: str = "us-east-1"):
     """Create autonomous agent"""
     
@@ -87,20 +87,24 @@ Leverage these tools directly via shell.
     # Create callback handler
     callback_handler = ReasoningHandler(max_steps=max_steps)
     
-    # Configure model
-    logger.debug("Configuring BedrockModel")
+    # Configure model with Claude 4 interleaved thinking
+    logger.debug("Configuring BedrockModel with Claude 4 interleaved thinking")
     model = BedrockModel(
         model_id=model_id,
         region_name=region_name,
         temperature=0.95, 
         max_tokens=4096,
-        top_p=0.95
+        top_p=0.95,
+        additional_request_fields={
+            "anthropic_beta": ["interleaved-thinking-2025-05-14"],
+            "thinking": {"type": "enabled", "budget_tokens": 8000},
+        }
     )
     
     logger.debug("Creating autonomous agent")
     agent = Agent(
         model=model,
-        tools=[shell, file_write, editor, load_tool, memory_store, memory_retrieve, memory_list],
+        tools=[shell, file_write, editor, load_tool, batch, memory_store, memory_retrieve, memory_list],
         system_prompt=system_prompt,
         callback_handler=callback_handler,
         conversation_manager=SlidingWindowConversationManager(window_size=120),

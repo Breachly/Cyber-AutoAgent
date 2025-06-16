@@ -65,8 +65,8 @@ def main():
     parser.add_argument(
         "--model",
         type=str,
-        default="us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-        help="Bedrock model ID to use (default: us.anthropic.claude-3-7-sonnet-20250219-v1:0)"
+        default="us.anthropic.claude-sonnet-4-20250514-v1:0",
+        help="Bedrock model ID to use (default: us.anthropic.claude-sonnet-4-20250514-v1:0)"
     )
     parser.add_argument(
         "--region",
