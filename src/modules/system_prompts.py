@@ -49,18 +49,18 @@ Use the batch tool to execute multiple operations in parallel when:
 **When to use batch:**
 ✅ Port scanning + web scanning simultaneously: 
    batch(invocations=[
-       {"name": "shell", "arguments": {"command": "nmap -sV target"}},
-       {"name": "shell", "arguments": {"command": "nikto -h target"}}
+       {{"name": "shell", "arguments": {{"command": "nmap -sV target"}}}},
+       {{"name": "shell", "arguments": {{"command": "nikto -h target"}}}}
    ])
 ✅ Multiple SQL injection tests on different endpoints:
    batch(invocations=[
-       {"name": "shell", "arguments": {"command": "sqlmap -u url1 --batch"}},
-       {"name": "shell", "arguments": {"command": "sqlmap -u url2 --batch"}}
+       {{"name": "shell", "arguments": {{"command": "sqlmap -u url1 --batch"}}}},
+       {{"name": "shell", "arguments": {{"command": "sqlmap -u url2 --batch"}}}}
    ])
 ✅ Storing multiple findings efficiently:
    batch(invocations=[
-       {"name": "memory_store", "arguments": {"content": "finding1", "category": "vulnerability"}},
-       {"name": "memory_store", "arguments": {"content": "finding2", "category": "credential"}}
+       {{"name": "memory_store", "arguments": {{"content": "finding1", "category": "vulnerability"}}}},
+       {{"name": "memory_store", "arguments": {{"content": "finding2", "category": "credential"}}}}
    ])
 
 **When NOT to use batch:**
