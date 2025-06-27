@@ -166,61 +166,166 @@ flowchart TD
 2. Professional security tools for specialized operations
 3. Custom meta-tool creation for complex scenarios requiring multiple chained operations
 
-## 4. Quick Start
+## 4. Installation & Deployment
 
-### Prerequisites
+Cyber-AutoAgent can be deployed in two ways: **locally** or using **Docker** (recommended for consistent environments).
+
+### Prerequisites (Both Methods)
 
 1. **AWS Account with Bedrock Access**
    ```bash
    # Configure AWS credentials
    aws configure
+   # Or set environment variables:
+   export AWS_ACCESS_KEY_ID=your_key
+   export AWS_SECRET_ACCESS_KEY=your_secret
+   export AWS_REGION=your_region
    ```
 
-2. **Python 3.9+ Environment**
-   ```bash
-   python --version  # Should be 3.9+
-   ```
-
-3. **Security Tools (Optional but Recommended)**
-   ```bash
-   # On Kali Linux / Debian
-   sudo apt update && sudo apt install -y nmap nikto sqlmap gobuster
-   
-   # On macOS with Homebrew
-   brew install nmap nikto sqlmap gobuster
-   ```
-
-### Installation
-
-1. **Clone the Repository**
+2. **Clone the Repository**
    ```bash
    git clone https://github.com/cyber-autoagent/cyber-autoagent.git
    cd cyber-autoagent
    ```
 
-2. **Install Dependencies**
+---
+
+### Option 1: Docker Deployment (Recommended)
+
+**Best for:** Quick setup, consistent environment, all security tools pre-installed
+
+1. **Prerequisites**
+   - Docker installed ([Get Docker](https://docs.docker.com/get-docker/))
+   - AWS credentials configured (see above)
+
+2. **Build the Docker Image**
    ```bash
-   pip install -e .
+   docker build -t cyber-autoagent .
    ```
 
-3. **Verify Installation**
+3. **Run with Docker**
+   ```bash
+   # Using environment variables
+   docker run --rm \
+     -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+     -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+     -e AWS_REGION=${AWS_REGION:-us-east-1} \
+     -v $(pwd)/evidence:/app/evidence \
+     -v $(pwd)/logs:/app/logs \
+     cyber-autoagent \
+     --target "http://testphp.vulnweb.com" \
+     --objective "Identify vulnerabilities" \
+     --iterations 50
+   
+   # Or using AWS credentials file
+   docker run --rm \
+     -v ~/.aws:/home/cyberagent/.aws:ro \
+     -v $(pwd)/evidence:/app/evidence \
+     -v $(pwd)/logs:/app/logs \
+     cyber-autoagent \
+     --target "http://testphp.vulnweb.com" \
+     --objective "Identify vulnerabilities" \
+     --iterations 50
+   ```
+
+4. **Using Docker Compose** (Alternative)
+   ```bash
+   # Start with docker-compose
+   docker-compose up --build
+   
+   # Or run specific command
+   docker-compose run --rm cyber-autoagent \
+     --target "http://testphp.vulnweb.com" \
+     --objective "Identify vulnerabilities" \
+     --iterations 50
+   ```
+
+---
+
+### Option 2: Local Installation
+
+**Best for:** Development, debugging, or when Docker is not available
+
+1. **System Requirements**
+   - Python 3.9+ (`python --version`)
+   - pip package manager
+
+2. **Install Security Tools** (Optional but Recommended)
+   ```bash
+   # On Kali Linux / Debian / Ubuntu
+   sudo apt update && sudo apt install -y nmap nikto sqlmap gobuster
+   
+   # On macOS with Homebrew
+   brew install nmap nikto sqlmap gobuster
+   
+   # On other systems, install tools individually from their official sources
+   ```
+
+3. **Install Python Dependencies**
+   ```bash
+   # Create virtual environment (recommended)
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   
+   # Install package
+   pip install -e .
+   
+   # Install FAISS for memory storage
+   pip install faiss-cpu  # or faiss-gpu for CUDA support
+   ```
+
+4. **Verify Installation**
    ```bash
    python src/cyberautoagent.py --help
    ```
 
-### Basic Usage
+5. **Run Locally**
+   ```bash
+   python src/cyberautoagent.py \
+     --target "http://testphp.vulnweb.com" \
+     --objective "Identify and demonstrate exploitable vulnerabilities" \
+     --iterations 50
+   ```
+
+---
+
+### Evidence & Log Storage
+
+Both deployment methods store data in the same local directories:
+
+| Data Type | Local Execution | Docker Execution | Local Directory |
+|-----------|----------------|------------------|-----------------|
+| Evidence  | `./evidence/evidence_OP_*` | `/app/evidence/evidence_OP_*` | `./evidence/` |
+| Logs      | `./logs/cyber_operations.log` | `/app/logs/cyber_operations.log` | `./logs/` |
+| Reports   | Saved in evidence directory | Saved in evidence directory | `./evidence/evidence_OP_*/` |
+
+**Note:** Directories are created automatically on first run.
+
+---
+
+### Quick Start Examples
 
 ```bash
-# Basic security assessment
-python src/cyberautoagent.py \
-  --target "http://testphp.vulnweb.com" \
-  --objective "Identify and demonstrate exploitable vulnerabilities" \
+# Basic security assessment (Docker)
+docker run --rm \
+  -v ~/.aws:/home/cyberagent/.aws:ro \
+  -v $(pwd)/evidence:/app/evidence \
+  -v $(pwd)/logs:/app/logs \
+  cyber-autoagent \
+  --target "192.168.1.100" \
+  --objective "Perform comprehensive security assessment" \
   --iterations 50
 
-# With custom model and region
+# Basic security assessment (Local)
+python src/cyberautoagent.py \
+  --target "192.168.1.100" \
+  --objective "Perform comprehensive security assessment" \
+  --iterations 50
+
+# With custom model and verbose output
 python src/cyberautoagent.py \
   --target "x.x.x.x" \
-  --objective "Enumerate services and find potential entry points" \
+  --objective "Find SQL injection vulnerabilities" \
   --model "us.anthropic.claude-opus-4-20250514-v1:0" \
   --region "us-west-2" \
   --verbose
@@ -243,20 +348,7 @@ python src/cyberautoagent.py \
 
 ## 5. Setting Up DVWA Test Target
 
-For safe testing, we recommend using Damn Vulnerable Web Application (DVWA):
-
-### Docker Setup (Recommended)
-
-```bash
-# Pull and run DVWA
-docker run -d -p 8080:80 vulnerables/web-dvwa
-
-# Access DVWA
-open http://localhost:8080
-
-# Default credentials: admin/password
-# Set security level to "Low" for testing
-```
+For safe testing, we recommend using Damn Vulnerable Web Application (DVWA) as a hello world example when starting:
 
 ### Manual Setup
 
@@ -268,8 +360,6 @@ cd DVWA
 # Copy config
 cp config/config.inc.php.dist config/config.inc.php
 
-# Start with XAMPP/LAMP stack
-# Configure database settings in config.inc.php
 ```
 
 ### Test Against DVWA
@@ -391,7 +481,6 @@ brew install nmap nikto sqlmap gobuster      # macOS
 - **Dynamic Plan Decomposition** - Automatic task breakdown based on target complexity  
 - **Multi-Target Orchestration** - Parallel assessment of multiple systems
 - **Chain-of-Thought Reasoning** - Detailed decision logging and explanation
-- **Cloud-Native Deployment** - Containerized execution with scaling capabilities
 
 ## 10. Contributing
 
@@ -400,22 +489,6 @@ brew install nmap nikto sqlmap gobuster      # macOS
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
-
-### Development Setup
-```bash
-# Install with development dependencies
-pip install -e ".[dev]"
-
-# Run tests
-pytest
-
-# Format code
-black src/
-isort src/
-
-# Type checking
-mypy src/
-```
 
 ## 11. License
 
