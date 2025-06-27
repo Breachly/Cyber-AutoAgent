@@ -7,7 +7,13 @@ from datetime import datetime
 def get_data_path(subdir=''):
     """Get the appropriate data path for current environment (Docker or local)"""
     base = '/app' if os.path.exists('/app') else os.getcwd()
-    return os.path.join(base, subdir) if subdir else base
+    path = os.path.join(base, subdir) if subdir else base
+    
+    # Create directory if it doesn't exist
+    if subdir and not os.path.exists(path):
+        os.makedirs(path, exist_ok=True)
+    
+    return path
 
 # ANSI color codes for terminal output
 class Colors:

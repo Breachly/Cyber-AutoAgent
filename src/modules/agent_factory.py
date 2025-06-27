@@ -88,16 +88,15 @@ Leverage these tools directly via shell.
     callback_handler = ReasoningHandler(max_steps=max_steps)
     
     # Configure model with Claude 4 interleaved thinking
-    logger.debug("Configuring BedrockModel with Claude 4 interleaved thinking")
     model = BedrockModel(
         model_id=model_id,
         region_name=region_name,
-        temperature=0.95, 
-        max_tokens=4096,
+        temperature=1, 
+        max_tokens=1026,
         top_p=0.95,
         additional_request_fields={
             "anthropic_beta": ["interleaved-thinking-2025-05-14"],
-            "thinking": {"type": "enabled", "budget_tokens": 8000},
+            "thinking": {"type": "enabled", "budget_tokens": 1024},
         }
     )
     

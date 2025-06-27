@@ -280,16 +280,46 @@ class ReasoningHandler(PrintingCallbackHandler):
             
             self.tools_used.append(f"{tool_name}: executed")
             
+        elif tool_name == "batch":
+            invocations = tool_input.get("invocations", [])
+            if invocations:
+                print("↳ Parallel execution of %d tools:" % len(invocations))
+                for i, inv in enumerate(invocations, 1):
+                    inv_name = inv.get('name', 'unknown')
+                    inv_args = inv.get('arguments', {})
+                    if inv_name == 'shell' and 'command' in inv_args:
+                        print("  %d. %s: %s%s%s" % (i, inv_name, Colors.GREEN, inv_args['command'], Colors.RESET))
+                    else:
+                        # Show first key-value pair for other tools
+                        args_preview = ""
+                        if inv_args:
+                            first_key = list(inv_args.keys())[0]
+                            args_preview = ": %s=%s" % (first_key, str(inv_args[first_key])[:50])
+                        print("  %d. %s%s" % (i, inv_name, args_preview))
+            else:
+                print("↳ Executing batch with no invocations")
+            self.tools_used.append(f"batch: {len(invocations)} tools")
+            
         else:
             # Custom tool
             if tool_input:
-                # Show first 2 most relevant parameters
-                key_params = list(tool_input.keys())[:2]
-                if key_params:
-                    params_str = ", ".join(f"{k}={str(tool_input[k])[:20]}{'...' if len(str(tool_input[k])) > 20 else ''}" for k in key_params)
-                    print("↳ Parameters: %s%s%s" % (Colors.DIM, params_str, Colors.RESET))
+                # For better visibility, show more of the parameters
+                if tool_name in ['http_request', 'file_read', 'file_write']:
+                    # Show specific parameters for common tools
+                    if 'url' in tool_input:
+                        print("↳ URL: %s%s%s" % (Colors.CYAN, tool_input['url'], Colors.RESET))
+                    elif 'path' in tool_input:
+                        print("↳ Path: %s%s%s" % (Colors.YELLOW, tool_input['path'], Colors.RESET))
+                    elif 'file_path' in tool_input:
+                        print("↳ File: %s%s%s" % (Colors.YELLOW, tool_input['file_path'], Colors.RESET))
                 else:
-                    print("↳ Executing: %s%s%s" % (Colors.MAGENTA, tool_name, Colors.RESET))
+                    # Show first 2 most relevant parameters with more characters
+                    key_params = list(tool_input.keys())[:2]
+                    if key_params:
+                        params_str = ", ".join(f"{k}={str(tool_input[k])[:80]}{'...' if len(str(tool_input[k])) > 80 else ''}" for k in key_params)
+                        print("↳ Parameters: %s%s%s" % (Colors.DIM, params_str, Colors.RESET))
+                    else:
+                        print("↳ Executing: %s%s%s" % (Colors.MAGENTA, tool_name, Colors.RESET))
             else:
                 print("↳ Executing: %s%s%s" % (Colors.MAGENTA, tool_name, Colors.RESET))
             
